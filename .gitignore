@@ -1,0 +1,7 @@
+*.txt
+config.ini
+config2.ini
+__pycache__
+!requirements.txt
+images
+channels
