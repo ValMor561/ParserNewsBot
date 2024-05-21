@@ -19,12 +19,12 @@ class Text2ImageAPI:
         data = response.json()
         return data[0]['id']
     
-    def generate(self, prompt, model, images=1, width=1024, height=1024):
+    def generate(self, prompt, model, images=1):
         params = {
             "type": "GENERATE",
             "numImages": images,
-            "width": width,
-            "height": height,
+            "width": config.WIDTH,
+            "height": config.HEIGHT,
             "style" : config.STYLE,
             "negativePromptUnclip" : 'лица, люди, знаменитости, личности, человек, профиль',
             "generateParams": {
@@ -61,7 +61,8 @@ async def generate_image_by_title(title):
     image_data = base64.b64decode(image_base64)
     with open(f"images/image.jpg", "wb") as file:
         file.write(image_data)
-    add_watermark()
+    if config.WATERMARK != 'off':
+        add_watermark(config.WATERMARK)
     return True
 
 async def generate_image_by_first_p(first_p):
@@ -75,12 +76,13 @@ async def generate_image_by_first_p(first_p):
     image_data = base64.b64decode(image_base64)
     with open(f"images/image.jpg", "wb") as file:
         file.write(image_data)
-    add_watermark()
+    if config.WATERMARK != 'off':
+        add_watermark(config.WATERMARK)
     return True
 
-def add_watermark():
+def add_watermark(watermark_filename):
     base_image = Image.open('images/image.jpg')
-    watermark = Image.open('images/watermark.png')
+    watermark = Image.open(watermark_filename)
 
     base_image.paste(watermark, (20,10), mask=watermark)
     base_image.save('images/image.jpg')

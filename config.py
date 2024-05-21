@@ -46,6 +46,9 @@ TABLENAME = config['BD']['tablename']
 BRAIN_API_KEY = config['BRAINFUSION']['api_key']
 BRAIN_SECRET_KEY = config['BRAINFUSION']['secret_key']
 STYLE = config['BRAINFUSION']['style']
+WATERMARK = config['BRAINFUSION']['watermark']
+WIDTH = int(config['BRAINFUSION']['width'])
+HEIGHT = int(config['BRAINFUSION']['height'])
 SOURCES = {}
 keys = []
 for source in config['SOURCES']:
