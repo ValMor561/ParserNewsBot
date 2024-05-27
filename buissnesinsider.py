@@ -4,7 +4,7 @@ import config
 from getcontent import get_content, replace_hashtag, edit_text, translate_text, get_first_paragrapth
 
 
-class CNN():
+class BI():
     #Удаление парметров
     def delete_param(self, url):
         match = re.match(r'([^?]*)\?', url)
@@ -14,26 +14,18 @@ class CNN():
             return url
 
     #Получение всех ссылок с категории
-    def get_href(self, url):
-        soup = get_content(url)
-        divs = soup.find(class_="zone").find_all(class_='container__item')
+    def get_href(self, start_url):
+        soup = get_content(start_url)
+        divs = soup.find_all(['h2', 'h3'])
         all_url = []
         for div in divs:
-            url = div.find('a')
-            if url.attrs['data-link-type'] != 'article':
+            tag = div.find_previous('div', class_='tout-tag')
+            tag = tag.find('a').attrs['href']
+            if tag not in start_url:
                 continue
+            url = div.find('a')
             url = self.delete_param(url['href'])
-            
-            date_pattern = re.compile(r'/(\d{4}/\d{2}/\d{2})/')
-            match = date_pattern.search(url)
-            if match:
-                date = match.group(1)
-                date = datetime.strptime(date, '%Y/%m/%d')
-                today = datetime.today()
-                if today.day == date.day and today.month == date.month:
-                    all_url.append(f"https://edition.cnn.com{url}")
-            else:
-                all_url.append(f"https://edition.cnn.com{url}")  
+            all_url.append(f"https://www.businessinsider.com{url}")
         return all_url
 
     #Получение названия поста
@@ -41,12 +33,12 @@ class CNN():
         if soup == -1:
             return
         
-        title = soup.title.string.split('|')[0].strip()
+        title = soup.find('h1').text
         return title
     
     def get_image(self, url):
         soup = get_content(url)
-        img_link = soup.find(class_="image__container").find('img').attrs['src']
+        img_link = soup.find(class_="aspect-ratio").find('img').attrs['src']
         img_link = self.delete_param(img_link)
         return img_link
 
@@ -56,13 +48,13 @@ class CNN():
             return
         res = []
         
-        tags = soup.find(class_='breadcrumb')
+        tags = soup.find(class_='post-meta')
         if tags:
             tags = tags.find_all('a')
         else:
             return res
         for tag in tags:
-            tag_text = tag.text
+            tag_text = tag.text.strip()
             if config.EXCLUDE != "off":
                 if tag_text in config.EXCLUDE:
                     return -1
@@ -75,15 +67,16 @@ class CNN():
 
     #Получение текста со страницы
     def get_text(self, soup):
-        if soup == -1:
-            return
         res = ""
-        paragraphs = soup.find(class_='article__content-container').find_all('p', recursive=True)
+        paragraphs = soup.find(class_='post-content')
+        if not paragraphs:
+            return -1
+        paragraphs = paragraphs.find_all('p', recursive=True)
         for paragraph in paragraphs:
             #Удаление цитат
             if paragraph.find_parent(['blockquote']) is not None:
                 continue
-            if 'editor’s note:' in paragraph.text.lower() or 'related article' in paragraph.text.lower():
+            if 'editor’s note:' in paragraph.text.lower() or 'related stories' in paragraph.text.lower():
                 continue
             paragraph_text = ''
             for element in paragraph.contents:
@@ -91,7 +84,7 @@ class CNN():
                 if element.name == 'a':  
                     paragraph_text += element.text  
                 elif isinstance(element, str):  
-                    paragraph_text += element 
+                    paragraph_text += element
                 elif element.name == 'span':
                     paragraph_text += element.text  
 
@@ -103,10 +96,10 @@ class CNN():
         return(res)
 
     def check_is_it_today_news(self, soup):
-        date = soup.find(class_="timestamp")
+        date = soup.find(class_="byline-timestamp")
         date = date.text.split(",")
-        date = date[-2].strip()
-        date_obj = datetime.strptime(date, "%a %B %d")
+        date = date[0].strip()
+        date_obj = datetime.strptime(date, '%Y-%m-%dT%H:%M:%SZ')
         today = datetime.today()
         if today.day == date_obj.day and today.month == date_obj.month:
             return True
@@ -133,8 +126,10 @@ class CNN():
                 return -2
             if len(tags) > 0:
                 page += '\n' + ", ".join(tags)
-        page += ", #CNN"
+        page += ", #BuissnerInsider"
         text = self.get_text(soup)
+        if text == -1:
+            return -1
         res['first_p'] = get_first_paragrapth(text)
         page += "\n\n" + text
         if config.EXCLUDE_TEXT:
@@ -153,7 +148,9 @@ class CNN():
     
     def get_last_title(self, url):
         soup = get_content(url)
-        divs = soup.find_all(class_="container__headline-text")
+        divs = soup.find_all(['h2', 'h3'])
         for div in divs:
-            if 'live updates' not in div.parent.text.lower():
+            tag = div.find_previous('div', class_='tout-tag')
+            tag = tag.find('a').attrs['href']
+            if tag in url:
                 return div.text

@@ -17,8 +17,6 @@ from generate import generate_image_by_first_p, generate_image_by_title
 import config
 import bd
 
-
-
 bot = Bot(token=config.BOT_TOKEN, parse_mode=ParseMode.HTML)
 dp = Dispatcher(storage=MemoryStorage())
 router = Router()
@@ -32,11 +30,11 @@ async def run_bot():
     all_week_days = ["понедельник", "вторник", "среда", "четверг", "пятница", "суббота", "воскресенье"]
     current_day = now.weekday()
     global IS_ERROR
-    if os.path.exists("restart.txt"):
-        with open("restart.txt", 'r') as file:
+    if os.path.exists("settings/restart.txt"):
+        with open("settings/restart.txt", 'r') as file:
             id = file.read().strip()
             await bot.send_message(id, "Бот запущен")
-        os.remove("restart.txt")
+        os.remove("settings/restart.txt")
     SCHEDULER = AsyncIOScheduler(timezone='Europe/Moscow')
     if all_week_days[current_day] in config.WORK_DAYS:
         if config.WORK_PERIOD != "off":
@@ -56,7 +54,7 @@ async def run_bot():
     SCHEDULER.start()
 
 def save_current_time_to_file():
-    with open("time.txt", 'w') as file:
+    with open("settings/time.txt", 'w') as file:
         current_time = datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d")
         file.write(current_time)
 
@@ -92,6 +90,9 @@ async def check_urls():
             dict = PM.get_page(URL)
             if dict == -1:
                 continue  
+            elif dict == -2:
+                BD.insert_url(URL)
+                continue
             
             text = dict['page']
             if config.IMAGE == 'on':
@@ -207,7 +208,7 @@ async def process_callback_stop(msg: Message):
 
 async def get_last_bot_message_time():
     res = "Время последнего сообщения: "
-    with open("time.txt", 'r') as file:
+    with open("settings/time.txt", 'r') as file:
         time_str = file.read().strip()
         res += time_str + "\n"
     return res
@@ -227,7 +228,7 @@ async def process_callback_stop(msg: Message):
 @router.message(Command("restart"))
 async def restart(msg: Message):
     await msg.answer("Перезапуск бота...\n")
-    with open("restart.txt", 'w') as file:
+    with open("settings/restart.txt", 'w') as file:
         file.write(str(msg.from_user.id))
     python = sys.executable
     os.execl(python, python, *sys.argv)

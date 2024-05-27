@@ -18,7 +18,7 @@ def get_multiple_values(param):
     return param.replace(" ", "").split(',')
 
 all_week_days = ["понедельник", "вторник", "среда", "четверг", "пятница", "суббота", "воскресенье"]
-config = get_config('config2.ini')
+config = get_config('settings/config2.ini')
 
 #Глобальные переменные всех параметров
 BOT_TOKEN = config['BOT_SETTINGS']['bot_token']
@@ -31,6 +31,7 @@ WORK_TIME = config['SETTINGS']['work_time'].split(',')
 WORK_PERIOD = int(config['SETTINGS']['work_period'])
 REPLACMENT = config['SETTINGS']['replacement']
 EXCLUDE = get_multiple_values(config['SETTINGS']['exclude'])
+EXCLUDE_TEXT = get_multiple_values(config['SETTINGS']['exclude_text'])
 HASHTAG = config['MESSAGE']['hashtag']
 IMAGE = config['MESSAGE']['image']
 GENERATE_IMAGE = config['MESSAGE']['generate_image']
