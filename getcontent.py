@@ -39,11 +39,12 @@ def get_content(url):
     count_try = 0
     if config.PROXY[0] != "off":
         #Перебор прокси если не получилось подключиться
-        while count_try != 7:
+        while count_try != 15:
             proxies = get_proxy()
             try:
                 response = requests.get(url=url, headers=headers, proxies=proxies)
                 if response.status_code != 200:
+                    print(response.text)
                     print("Прокси не подошла пробую другую")
                     count_try += 1
                 else:    
@@ -53,9 +54,9 @@ def get_content(url):
                 count_try += 1
             except ConnectionError as e:
                 count_try += 1
-        if count_try == 7:
+        if count_try == 15:
             print("7 неудачных попыток")
-            response = requests.get(url, headers=headers)
+            return -1
     else:
         response = requests.get(url, headers=headers)
             

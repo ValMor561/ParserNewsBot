@@ -19,10 +19,6 @@ class BI():
         divs = soup.find_all(['h2', 'h3'])
         all_url = []
         for div in divs:
-            tag = div.find_previous('div', class_='tout-tag')
-            tag = tag.find('a').attrs['href']
-            if tag not in start_url:
-                continue
             url = div.find('a')
             url = self.delete_param(url['href'])
             all_url.append(f"https://www.businessinsider.com{url}")
@@ -38,9 +34,12 @@ class BI():
     
     def get_image(self, url):
         soup = get_content(url)
-        img_link = soup.find(class_="aspect-ratio").find('img').attrs['src']
-        img_link = self.delete_param(img_link)
-        return img_link
+        img_link = soup.find(class_="aspect-ratio")
+        if img_link:
+            img_link = img_link.find('img').attrs['src']
+            img_link = self.delete_param(img_link)
+            return img_link
+        return ""
 
     #Получение хэштегов
     def get_tags(self, soup):
@@ -112,8 +111,8 @@ class BI():
         if soup == -1:
             return -1
         page = ""
-        if not self.check_is_it_today_news(soup):
-            return -2
+        #if not self.check_is_it_today_news(soup):
+        #    return -2
         if config.HEADER != "":
             page += config.HEADER + "\n\n"
         title = translate_text(self.get_title(soup))
