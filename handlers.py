@@ -87,7 +87,11 @@ async def check_urls():
                 continue
 
             #Получение текста
-            dict = PM.get_page(URL)
+            try:
+                dict = PM.get_page(URL)
+            except Exception as e:
+                print(e)
+                continue
             if dict == -1:
                 continue  
             elif dict == -2:

@@ -1,10 +1,11 @@
 import re
 from datetime import datetime
+import pytz
 import config
 from getcontent import get_content, replace_hashtag, edit_text, translate_text, get_first_paragrapth
 
 
-class BI():
+class TG():
     #Удаление парметров
     def delete_param(self, url):
         match = re.match(r'([^?]*)\?', url)
@@ -14,19 +15,14 @@ class BI():
             return url
 
     #Получение всех ссылок с категории
-    def get_href(self, start_url):
-        soup = get_content(start_url)
-        divs = soup.find_all(['h2', 'h3'])
+    def get_href(self, url):
+        soup = get_content(url)
+        divs = soup.find_all(class_='dcr-16c50tn')
         all_url = []
         for div in divs:
-            tag = div.find_previous('div', class_='tout-tag')
-            title = tag.find('title')
-            if title:
-                if title.text == "Play Icon":
-                    continue
             url = div.find('a')
             url = self.delete_param(url['href'])
-            all_url.append(f"https://www.businessinsider.com{url}")
+            all_url.append(f"https://www.theguardian.com{url}")  
         return all_url
 
     #Получение названия поста
@@ -34,17 +30,11 @@ class BI():
         if soup == -1:
             return
         
-        title = soup.find('h1').text
+        title = soup.title.string.split('|')[0].strip()
         return title
     
     def get_image(self, url):
-        soup = get_content(url)
-        img_link = soup.find(class_="aspect-ratio")
-        if img_link:
-            img_link = img_link.find('img').attrs['src']
-            img_link = self.delete_param(img_link)
-            return img_link
-        return ""
+        return f"{url}#img-1"
 
     #Получение хэштегов
     def get_tags(self, soup):
@@ -52,13 +42,13 @@ class BI():
             return
         res = []
         
-        tags = soup.find(class_='post-meta')
+        tags = soup.find(class_='dcr-1jl528t')
         if tags:
             tags = tags.find_all('a')
         else:
             return res
         for tag in tags:
-            tag_text = tag.text.strip()
+            tag_text = tag.text
             if config.EXCLUDE != "off":
                 if tag_text in config.EXCLUDE:
                     return -1
@@ -72,15 +62,15 @@ class BI():
     #Получение текста со страницы
     def get_text(self, soup):
         res = ""
-        paragraphs = soup.find(class_='post-content')
-        if not paragraphs:
+        div = soup.find('div', id='maincontent')
+        if not div:
             return -1
-        paragraphs = paragraphs.find_all('p', recursive=True)
+        paragraphs = div.find_all('p')
         for paragraph in paragraphs:
             #Удаление цитат
             if paragraph.find_parent(['blockquote']) is not None:
                 continue
-            if 'editor’s note:' in paragraph.text.lower() or 'related stories' in paragraph.text.lower():
+            if 'editor’s note:' in paragraph.text.lower() or 'related article' in paragraph.text.lower():
                 continue
             paragraph_text = ''
             for element in paragraph.contents:
@@ -88,9 +78,9 @@ class BI():
                 if element.name == 'a':  
                     paragraph_text += element.text  
                 elif isinstance(element, str):  
-                    paragraph_text += element
+                    paragraph_text += element 
                 elif element.name == 'span':
-                    paragraph_text += element.text  
+                    continue
 
             #Удаление пустых абзацев
             if paragraph_text == "" or paragraph_text == ' ':
@@ -100,10 +90,13 @@ class BI():
         return(res)
 
     def check_is_it_today_news(self, soup):
-        date = soup.find(class_="byline-timestamp")
-        date = date.text.split(",")
-        date = date[0].strip()
-        date_obj = datetime.strptime(date, '%Y-%m-%dT%H:%M:%SZ')
+        date = soup.find(class_="dcr-1pexjb9")
+        if date.find(class_="dcr-u0h1qy"):
+            date = date.find(class_="dcr-u0h1qy").text
+        else:
+            date = date.text
+        date = date[:-10].strip()
+        date_obj = datetime.strptime(date, "%a %d %b %Y")
         today = datetime.today()
         if today.day == date_obj.day and today.month == date_obj.month:
             return True
@@ -130,7 +123,7 @@ class BI():
                 return -2
             if len(tags) > 0:
                 page += '\n' + ", ".join(tags)
-        page += ", #BuissnerInsider"
+        page += ", #TheGuardian"
         text = self.get_text(soup)
         if text == -1:
             return -1
@@ -152,9 +145,10 @@ class BI():
     
     def get_last_title(self, url):
         soup = get_content(url)
-        divs = soup.find_all(['h2', 'h3'])
-        for div in divs:
-            tag = div.find_previous('div', class_='tout-tag')
-            tag = tag.find('a').attrs['href']
-            if tag in url:
-                return div.text
+        div = soup.find(class_='dcr-16c50tn').find('h3')
+        return div.text
+    
+tg = TG()
+urls = tg.get_href("https://www.theguardian.com/uk/money")
+for url in urls:
+    print(tg.get_page(url))
