@@ -22,6 +22,8 @@ class TG():
         for div in divs:
             url = div.find('a')
             url = self.delete_param(url['href'])
+            if "instagram.com" in url:
+                continue
             all_url.append(f"https://www.theguardian.com{url}")  
         return all_url
 
@@ -90,6 +92,8 @@ class TG():
         return(res)
 
     def check_is_it_today_news(self, soup):
+        if soup.find(id="key-events-carousel"):
+            return False
         date = soup.find(class_="dcr-1pexjb9")
         if date.find(class_="dcr-u0h1qy"):
             date = date.find(class_="dcr-u0h1qy").text
@@ -147,8 +151,3 @@ class TG():
         soup = get_content(url)
         div = soup.find(class_='dcr-16c50tn').find('h3')
         return div.text
-    
-tg = TG()
-urls = tg.get_href("https://www.theguardian.com/uk/money")
-for url in urls:
-    print(tg.get_page(url))

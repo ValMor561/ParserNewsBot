@@ -26,7 +26,9 @@ class BI():
                     continue
             url = div.find('a')
             url = self.delete_param(url['href'])
-            all_url.append(f"https://www.businessinsider.com{url}")
+            if "businessinsider" not in url:
+                url = f"https://www.businessinsider.com{url}"
+            all_url.append(url)
         return all_url
 
     #Получение названия поста

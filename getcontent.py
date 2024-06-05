@@ -55,7 +55,7 @@ def get_content(url):
             except ConnectionError as e:
                 count_try += 1
         if count_try == 15:
-            print("7 неудачных попыток")
+            print("15 неудачных попыток")
             return -1
     else:
         response = requests.get(url, headers=headers)
