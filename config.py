@@ -18,7 +18,7 @@ def get_multiple_values(param):
     return param.replace(" ", "").split(',')
 
 all_week_days = ["понедельник", "вторник", "среда", "четверг", "пятница", "суббота", "воскресенье"]
-config = get_config('settings/config2.ini')
+config = get_config('settings/config.ini')
 
 #Глобальные переменные всех параметров
 BOT_TOKEN = config['BOT_SETTINGS']['bot_token']
@@ -32,11 +32,17 @@ WORK_PERIOD = int(config['SETTINGS']['work_period'])
 REPLACMENT = config['SETTINGS']['replacement']
 EXCLUDE = get_multiple_values(config['SETTINGS']['exclude'])
 EXCLUDE_TEXT = get_multiple_values(config['SETTINGS']['exclude_text'])
+INCLUDE = config['SETTINGS']['include_work']
+INCLUDE_LIST = get_multiple_values(config['SETTINGS']['include_list'])
+SOURCE_TAG = config['SETTINGS']['source_tag']
+LIMIT_POST = config['SETTINGS']['limit_post']
 HASHTAG = config['MESSAGE']['hashtag']
 IMAGE = config['MESSAGE']['image']
 GENERATE_IMAGE = config['MESSAGE']['generate_image']
-TEXT = config['MESSAGE']['text']
-TEXT_URL = config['MESSAGE']['text_url']
+FIRST_TEXT = config['MESSAGE']['first_text']
+FIRST_TEXT_URL = config['MESSAGE']['first_text_url']
+SECOND_TEXT = config['MESSAGE']['second_text']
+SECOND_TEXT_URL = config['MESSAGE']['second_text_url']
 TEXT_LENGTH = 1000 if config['MESSAGE']['text_length'] == '*' else int(config['MESSAGE']['text_length'])
 HEADER = config['MESSAGE']['header']
 HOST = config['BD']['host']

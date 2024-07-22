@@ -49,9 +49,10 @@ def get_content(url):
                     count_try += 1
                 else:    
                     break
-            except requests.exceptions.ProxyError:
+            except requests.exceptions.ProxyError as e:
                 print("Прокси не подошла пробую другую")
                 count_try += 1
+                print(e)
             except ConnectionError as e:
                 count_try += 1
         if count_try == 15:
@@ -87,9 +88,9 @@ def edit_text(text):
         return text
     
     if config.IMAGE == 'on':
-        maxlen = 1024 - len(config.TEXT) - len(config.TEXT_URL) - 40
+        maxlen = 1024 - len(config.FIRST_TEXT) - len(config.FIRST_TEXT_URL) - len(config.SECOND_TEXT) - len(config.SECOND_TEXT_URL) - 40
     else:
-        maxlen = 4096 - len(config.TEXT) - len(config.TEXT_URL) - 40
+        maxlen = 4096 - len(config.FIRST_TEXT) - len(config.FIRST_TEXT_URL) - len(config.SECOND_TEXT) - len(config.SECOND_TEXT_URL) - 40
 
     if len(text) > maxlen:
         text = text[0:maxlen]

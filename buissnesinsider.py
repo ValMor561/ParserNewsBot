@@ -59,8 +59,12 @@ class BI():
             tags = tags.find_all('a')
         else:
             return res
+        include = False
         for tag in tags:
             tag_text = tag.text.strip()
+            if config.INCLUDE == "on":
+                if tag_text in config.INCLUDE_LIST:
+                    include = True
             if config.EXCLUDE != "off":
                 if tag_text in config.EXCLUDE:
                     return -1
@@ -68,7 +72,10 @@ class BI():
                 tag = replace_hashtag(tag_text)
                 if tag != '':
                     res.append("#" + tag.replace(" ", "_"))
-            
+        if config.SOURCE_TAG == "on":
+            res.append("#Bitmedia")
+        if config.INCLUDE == "on" and not include:
+            return -1     
         return res
 
     #Получение текста со страницы
@@ -132,7 +139,6 @@ class BI():
                 return -2
             if len(tags) > 0:
                 page += '\n' + ", ".join(tags)
-        page += ", #BuissnerInsider"
         text = self.get_text(soup)
         if text == -1:
             return -1
@@ -142,13 +148,18 @@ class BI():
             for bad_word in config.EXCLUDE_TEXT:
                 if bad_word.lower() in text.lower():
                     return -2
-        page = edit_text(page)
+        page = edit_text(page) + "\n"
         #Добавление дополнительного текста
-        if config.TEXT != "":
-            if config.TEXT_URL == "":
-                page += config.TEXT + "\n"
+        if config.FIRST_TEXT != "":
+            if config.FIRST_TEXT_URL == "":
+                page += "\n<b>" + config.FIRST_TEXT + "</b>\n"
             else:
-                page += f'<a href="{config.TEXT_URL}">{config.TEXT}</a>' + "\n"
+                page += f'\n<b><a href="{config.FIRST_TEXT_URL}">{config.FIRST_TEXT}</a></b>\n'
+        if config.SECOND_TEXT != "":
+            if config.SECOND_TEXT_URL == "":
+                page += "\n" + config.SECOND_TEXT + "\n"
+            else:
+                page += f'\n<a href="{config.SECOND_TEXT_URL}">{config.SECOND_TEXT}</a>' + "\n"
         res['page'] = page 
         return res
     

@@ -73,6 +73,11 @@ async def check_urls():
     global RUNNING
     global IS_ERROR
     RUNNING = True
+
+    if config.LIMIT_POST == "*" or config.LIMIT_POST == "off":
+        session_count = -2
+    else:
+        session_count = int(config.LIMIT_POST)
     
     sources = config.SOURCES
     for url, channels_id in sources.items():
@@ -85,7 +90,11 @@ async def check_urls():
             #Отсев дублей
             if BD.check_url_exist(URL):
                 continue
-
+            
+            if session_count != -2:
+                if session_count == 0:
+                    return True
+            
             #Получение текста
             try:
                 dict = PM.get_page(URL)
@@ -123,6 +132,8 @@ async def check_urls():
                         print(e)
                         continue
             save_current_time_to_file()
+            session_count -= 1
+    return True
 
 async def get_photo(title, first_p, url, PM):
     if config.GENERATE_IMAGE == 'on':
