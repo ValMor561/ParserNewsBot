@@ -17,6 +17,8 @@ class TG():
     #Получение всех ссылок с категории
     def get_href(self, url):
         soup = get_content(url)
+        if soup == -1:
+            return -1
         divs = soup.find_all(class_='dcr-16c50tn')
         all_url = []
         for div in divs:

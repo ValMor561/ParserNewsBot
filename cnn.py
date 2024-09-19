@@ -16,6 +16,8 @@ class CNN():
     #Получение всех ссылок с категории
     def get_href(self, url):
         soup = get_content(url)
+        if soup == -1:
+            return -1
         divs = soup.find(class_="zone").find_all(class_='container__item')
         all_url = []
         for div in divs:

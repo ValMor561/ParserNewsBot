@@ -79,60 +79,70 @@ async def check_urls():
     else:
         session_count = int(config.LIMIT_POST)
     
-    sources = config.SOURCES
-    for url, channels_id in sources.items():
-        PM = choise_module(url)
-        #Получение ссылок из категории
-        URLS = PM.get_href(url)
-        for URL in URLS:
-            if not RUNNING:
-                return False
-            #Отсев дублей
-            if BD.check_url_exist(URL):
+    sources = config.CATEGORIES
+    for index, row in sources.iterrows():
+        row = row.fillna("")
+        urls = config.get_multiple_values(row['Urls'])
+        channels_id = config.get_multiple_values(row['Channels'])
+        config.FIRST_TEXT = str(row['First_text'])
+        config.FIRST_TEXT_URL = str(row['First_url'])
+        config.SECOND_TEXT = str(row['Second_text'])
+        config.SECOND_TEXT_URL = str(row['Second_url'])
+        for url in urls:
+            PM = choise_module(url)
+            #Получение ссылок из категории
+            URLS = PM.get_href(url)
+            if URLS == -1:
                 continue
-            
-            if session_count != -2:
-                if session_count == 0:
-                    return True
-            
-            #Получение текста
-            try:
-                dict = PM.get_page(URL)
-            except Exception as e:
-                print(e)
-                continue
-            if dict == -1:
-                continue  
-            elif dict == -2:
-                BD.insert_url(URL)
-                continue
-            
-            text = dict['page']
-            if config.IMAGE == 'on':
-                photo = await get_photo(dict['title'], dict['first_p'], URL, PM)
-            BD.insert_url(URL)
-            
-            #Отправка в канал
-            count = 0
-            for channel in channels_id:
-                if count == 15:
-                    await asyncio.sleep(5)
+            for URL in URLS:
+                if not RUNNING:
+                    return False
+                #Отсев дублей
+                if BD.check_url_exist(URL):
+                    continue
+                
+                if session_count != -2:
+                    if session_count == 0:
+                        return True
+                
+                #Получение текста
+                try:
+                    dict = PM.get_page(URL)
+                except Exception as e:
+                    print(e)
+                    continue
+                if dict == -1:
+                    continue  
+                elif dict == -2:
+                    BD.insert_url(URL)
+                    continue
+                
+                text = dict['page']
                 if config.IMAGE == 'on':
-                    try:
-                        success = await send_post_with_photo(photo, text, channel)
-                        count += success
-                    except Exception as e:
-                        print(e)
-                        continue
-                else:
-                    try:
-                        success = await send_text_post(text, channel)
-                        count += success
-                    except Exception as e:
-                        print(e)
-                        continue
-            save_current_time_to_file()
-            session_count -= 1
+                    photo = await get_photo(dict['title'], dict['first_p'], URL, PM)
+                BD.insert_url(URL)
+                
+                #Отправка в канал
+                count = 0
+                for channel in channels_id:
+                    if count == 15:
+                        await asyncio.sleep(5)
+                    if config.IMAGE == 'on':
+                        try:
+                            success = await send_post_with_photo(photo, text, channel)
+                            count += success
+                        except Exception as e:
+                            print(e)
+                            continue
+                    else:
+                        try:
+                            success = await send_text_post(text, channel)
+                            count += success
+                        except Exception as e:
+                            print(e)
+                            continue
+                save_current_time_to_file()
+                session_count -= 1
     return True
 
 async def get_photo(title, first_p, url, PM):

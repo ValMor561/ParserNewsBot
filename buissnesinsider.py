@@ -16,6 +16,8 @@ class BI():
     #Получение всех ссылок с категории
     def get_href(self, start_url):
         soup = get_content(start_url)
+        if soup == -1:
+            return -1
         divs = soup.find_all(['h2', 'h3'])
         all_url = []
         for div in divs:
