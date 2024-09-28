@@ -44,6 +44,9 @@ def get_content(url):
             try:
                 response = requests.get(url=url, headers=headers, proxies=proxies)
                 if response.status_code != 200:
+                    if "captcha" in response.text.lower():
+                        print("Captcha error")
+                        return -1
                     print(response.text)
                     print("Прокси не подошла пробую другую")
                     count_try += 1

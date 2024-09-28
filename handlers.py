@@ -127,7 +127,7 @@ async def check_urls():
                 for channel in channels_id:
                     if count == 15:
                         await asyncio.sleep(5)
-                    if config.IMAGE == 'on':
+                    if config.IMAGE == 'on' and photo != -1:
                         try:
                             success = await send_post_with_photo(photo, text, channel)
                             count += success

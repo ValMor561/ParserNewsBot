@@ -49,6 +49,9 @@ class Text2ImageAPI:
                 return data['images']
             attempts -= 1
             time.sleep(delay)
+        else:
+            print("Время ожидания истекло")
+            return False
 
 async def generate_image_by_title(title):
     api = Text2ImageAPI('https://api-key.fusionbrain.ai/', config.BRAIN_API_KEY, config.BRAIN_SECRET_KEY)

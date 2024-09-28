@@ -48,7 +48,11 @@ class CNN():
     
     def get_image(self, url):
         soup = get_content(url)
-        img_link = soup.find(class_="image__container").find('img').attrs['src']
+        img = soup.find(class_="image__container")
+        if img:
+            img_link = img.find('img').attrs['src']
+        else:
+            return -1
         img_link = self.delete_param(img_link)
         return img_link
 
