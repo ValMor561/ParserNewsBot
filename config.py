@@ -28,7 +28,7 @@ WORK_DAYS = all_week_days if config['SETTINGS']['work_days'] == '*' else config[
 WORK_START_TIME = config['SETTINGS']['work_start_time']
 WORK_END_RIME = config['SETTINGS']['work_end_time']
 WORK_TIME = config['SETTINGS']['work_time'].split(',')
-WORK_PERIOD = int(config['SETTINGS']['work_period'])
+WORK_PERIOD = config['SETTINGS']['work_period']
 REPLACMENT = config['SETTINGS']['replacement']
 EXCLUDE = get_multiple_values(config['SETTINGS']['exclude'])
 EXCLUDE_TEXT = get_multiple_values(config['SETTINGS']['exclude_text'])

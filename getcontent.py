@@ -46,8 +46,9 @@ def get_content(url):
                 if response.status_code != 200:
                     if "captcha" in response.text.lower():
                         print("Captcha error")
-                        return -1
-                    print(response.text)
+                        count_try += 1
+                    else:    
+                        print(response.text)
                     print("Прокси не подошла пробую другую")
                     count_try += 1
                 else:    
@@ -57,6 +58,10 @@ def get_content(url):
                 count_try += 1
                 print(e)
             except ConnectionError as e:
+                print(e)
+                count_try += 1
+            except Exception as e:
+                print(e)
                 count_try += 1
         if count_try == 15:
             print("15 неудачных попыток")

@@ -39,7 +39,7 @@ async def run_bot():
     if all_week_days[current_day] in config.WORK_DAYS:
         if config.WORK_PERIOD != "off":
             try:
-                SCHEDULER.add_job(check_urls, trigger='interval', minutes=config.WORK_PERIOD)
+                SCHEDULER.add_job(check_urls, trigger='interval', minutes=int(config.WORK_PERIOD))
                 SCHEDULER.add_job(check_urls, trigger='date', next_run_time=datetime.datetime.now() + datetime.timedelta(seconds=10))
             except Exception as e:
                 print(e)
@@ -47,10 +47,12 @@ async def run_bot():
         if config.WORK_TIME[0] != "off":
             for time in config.WORK_TIME:
                 try:
-                    SCHEDULER.add_job(check_urls, trigger='date', next_run_time=time)
+                    time = time.strip()
+                    hour, minute = time.split(":")
+                    SCHEDULER.add_job(check_urls, trigger='cron', day="*", hour=hour, minute=minute)
                 except Exception as e:
                     print(e)
-                    IS_ERROR = True            
+                    IS_ERROR = True              
     SCHEDULER.start()
 
 def save_current_time_to_file():
@@ -73,14 +75,13 @@ async def check_urls():
     global RUNNING
     global IS_ERROR
     RUNNING = True
-
-    if config.LIMIT_POST == "*" or config.LIMIT_POST == "off":
-        session_count = -2
-    else:
-        session_count = int(config.LIMIT_POST)
-    
+      
     sources = config.CATEGORIES
     for index, row in sources.iterrows():
+        if config.LIMIT_POST == "*" or config.LIMIT_POST == "off":
+            session_count = -2
+        else:
+            session_count = int(config.LIMIT_POST)
         row = row.fillna("")
         urls = config.get_multiple_values(row['Urls'])
         channels_id = config.get_multiple_values(row['Channels'])
@@ -103,7 +104,7 @@ async def check_urls():
                 
                 if session_count != -2:
                     if session_count == 0:
-                        return True
+                        continue
                 
                 #Получение текста
                 try:
@@ -120,14 +121,18 @@ async def check_urls():
                 text = dict['page']
                 if config.IMAGE == 'on':
                     photo = await get_photo(dict['title'], dict['first_p'], URL, PM)
+                else:
+                    photo = -2
                 BD.insert_url(URL)
-                
+                if photo == -1:
+                    print(f"Новость пропущена из-за отсутсвия картинки {URL}")
+                    continue
                 #Отправка в канал
                 count = 0
                 for channel in channels_id:
                     if count == 15:
                         await asyncio.sleep(5)
-                    if config.IMAGE == 'on' and photo != -1:
+                    if config.IMAGE == 'on':
                         try:
                             success = await send_post_with_photo(photo, text, channel)
                             count += success
