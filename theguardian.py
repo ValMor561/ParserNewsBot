@@ -19,10 +19,10 @@ class TG():
         soup = get_content(url)
         if soup == -1:
             return -1
-        divs = soup.find_all(class_='dcr-16c50tn')
+        section = soup.find(id=re.compile(r'^container-'))
+        links = section.find_all('a')
         all_url = []
-        for div in divs:
-            url = div.find('a')
+        for url in links:
             url = self.delete_param(url['href'])
             if "instagram.com" in url:
                 continue
@@ -121,6 +121,8 @@ class TG():
         soup = get_content(url)
         if soup == -1:
             return -1
+        if soup == -2:
+            return -2
         page = ""
         if not self.check_is_it_today_news(soup):
             return -2

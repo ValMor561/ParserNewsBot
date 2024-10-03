@@ -93,7 +93,7 @@ async def check_urls():
             PM = choise_module(url)
             #Получение ссылок из категории
             URLS = PM.get_href(url)
-            if URLS == -1:
+            if URLS == -1 or URLS == -2:
                 continue
             for URL in URLS:
                 if not RUNNING:

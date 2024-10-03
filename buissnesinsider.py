@@ -126,6 +126,8 @@ class BI():
         soup = get_content(url)
         if soup == -1:
             return -1
+        if soup == -2:
+            return -2
         page = ""
         if not self.check_is_it_today_news(soup):
             return -2
